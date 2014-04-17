@@ -88,7 +88,7 @@ public class FavoritesActivity extends BaseRepositoryActivity{
 
         // show the favorite resources
         if (resourceLookups.isEmpty()) {
-            nothingToDisplayText.setText(R.string.r_browser_nothing_to_display);
+            getListFragment().setEmptyText(getString(R.string.r_browser_nothing_to_display));
         } else {
             ResourceLookupArrayAdapter arrayAdapter = new ResourceLookupArrayAdapter(this, resourceLookups);
             arrayAdapter.sort(new ResourceLookupComparator()); // sort: non-case-sensitive, folders first

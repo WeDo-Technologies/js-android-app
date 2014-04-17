@@ -28,15 +28,16 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 import com.actionbarsherlock.view.Menu;
-import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockListActivity;
+import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockFragmentActivity;
 import com.google.inject.Inject;
 import com.jaspersoft.android.jaspermobile.R;
 import com.jaspersoft.android.jaspermobile.activities.HomeActivity;
@@ -58,15 +59,16 @@ import com.octo.android.robospice.SpiceManager;
 import com.octo.android.robospice.exception.RequestCancelledException;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
-import roboguice.inject.InjectView;
 
 import java.util.ArrayList;
+
+import static com.jaspersoft.android.jaspermobile.activities.repository.fragment.ResourcesListFragment.OnResourceClickListener;
 
 /**
  * @author Ivan Gadzhega
  * @since 1.0
  */
-public abstract class BaseRepositoryActivity extends RoboSherlockListActivity {
+public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivity implements OnResourceClickListener {
 
     // Extras
     public static final String EXTRA_BC_TITLE_SMALL = "BaseRepositoryActivity.EXTRA_BC_TITLE_SMALL";
@@ -81,11 +83,6 @@ public abstract class BaseRepositoryActivity extends RoboSherlockListActivity {
     // Action Bar IDs
     private static final int ID_AB_SETTINGS = 30;
 
-    @InjectView(R.id.nothingToDisplayText)
-    protected TextView nothingToDisplayText;
-    @InjectView(android.R.id.list)
-    protected ListView listView;
-
     @Inject
     protected JsRestClient jsRestClient;
     protected DatabaseProvider dbProvider;
@@ -99,19 +96,13 @@ public abstract class BaseRepositoryActivity extends RoboSherlockListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.repository_layout);
-        // set empty view
-        listView.setEmptyView(nothingToDisplayText);
         // Get the database provider
         dbProvider = new DatabaseProvider(this);
-        // Register a context menu to be shown for the given view
-        registerForContextMenu(listView);
         // bind to service
         serviceManager = new SpiceManager(JsXmlSpiceService.class);
     }
 
-    @Override
-    protected void onListItemClick(ListView listView, View view, int position, long id) {
-        ResourceLookup resource = (ResourceLookup) getListView().getItemAtPosition(position);
+    public void onResourceClick(ResourceLookup resource) {
         switch (resource.getResourceType()) {
             case folder:
                 openFolder(resource);
@@ -294,6 +285,22 @@ public abstract class BaseRepositoryActivity extends RoboSherlockListActivity {
         htmlViewer.putExtra(BaseHtmlViewerActivity.EXTRA_RESOURCE_URI, dashboardUri);
         htmlViewer.putExtra(BaseHtmlViewerActivity.EXTRA_RESOURCE_LABEL, dashboardLabel);
         startActivity(htmlViewer);
+    }
+
+    protected ListFragment getListFragment() {
+        return (ListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
+    }
+
+    protected ListView getListView() {
+        return getListFragment().getListView();
+    }
+
+    protected ListAdapter getListAdapter() {
+        return getListFragment().getListAdapter();
+    }
+
+    protected void setListAdapter(ListAdapter adapter) {
+        getListFragment().setListAdapter(adapter);
     }
 
     //---------------------------------------------------------------------

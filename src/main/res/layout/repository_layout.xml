@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Copyright (C) 2012 Jaspersoft Corporation. All rights reserved.
+    Copyright (C) 2012-2014 Jaspersoft Corporation. All rights reserved.
     http://community.jaspersoft.com/project/jaspermobile-android
 
     Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,17 +27,11 @@
     android:orientation="vertical"
     style="@style/repository.layout" >
 
-    <!-- Text for empty folder or search-->
-    <TextView
-        android:id="@+id/nothingToDisplayText"
-        style="@style/repository.nothingToDisplayLabel"
-        android:visibility="gone"
-    />
-
-    <!-- Resources list -->
-    <ListView
-        android:id="@android:id/list"
-        style="@style/list.view"
+    <fragment
+        android:id="@+id/list_fragment"
+        android:name="com.jaspersoft.android.jaspermobile.activities.repository.fragment.ResourcesListFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
     />
 
 </LinearLayout>

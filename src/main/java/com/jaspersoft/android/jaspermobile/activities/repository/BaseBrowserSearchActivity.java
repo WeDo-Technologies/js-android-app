@@ -147,7 +147,7 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
     protected void handleIntent(Intent intent, boolean forceUpdate) {
         this.forceUpdate = forceUpdate;
 
-        nothingToDisplayText.setText(R.string.loading_msg);
+        getListFragment().setListShown(false);
         setListAdapter(null);
 
         setRefreshActionButtonState(true);
@@ -275,7 +275,7 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
             }
 
             if (resourceLookups.isEmpty()) {
-                nothingToDisplayText.setText(getNothingToDisplayString());
+                getListFragment().setEmptyText(getNothingToDisplayString());
             } else {
                 ResourceLookupArrayAdapter arrayAdapter =
                         new ResourceLookupArrayAdapter(BaseBrowserSearchActivity.this, resourceLookups);
@@ -286,15 +286,15 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
             setRefreshActionButtonState(false);
         }
 
-        protected int getNothingToDisplayString() {
-            return R.string.r_browser_nothing_to_display;
+        protected String getNothingToDisplayString() {
+            return getString(R.string.r_browser_nothing_to_display);
         }
     }
 
     protected class SearchResourcesListener extends GetResourcesListener {
         @Override
-        protected int getNothingToDisplayString() {
-            return R.string.r_search_nothing_to_display;
+        protected String getNothingToDisplayString() {
+            return getString(R.string.r_search_nothing_to_display);
         }
     }
 
@@ -309,7 +309,7 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
             List<ResourceLookup> resourceLookups = resourceLookupsList.getResourceLookups();
 
             if (resourceLookups.isEmpty()) {
-                nothingToDisplayText.setText(getNothingToDisplayString());
+                getListFragment().setEmptyText(getNothingToDisplayString());
             } else {
                 ResourceLookupArrayAdapter arrayAdapter = (ResourceLookupArrayAdapter) getListAdapter();
                 if (arrayAdapter == null) {
@@ -336,15 +336,15 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
             }
         }
 
-        protected int getNothingToDisplayString() {
-            return R.string.r_browser_nothing_to_display;
+        protected String getNothingToDisplayString() {
+            return getString(R.string.r_browser_nothing_to_display);
         }
     }
 
     protected class SearchResourceLookupsListener extends GetResourceLookupsListener {
         @Override
-        protected int getNothingToDisplayString() {
-            return R.string.r_search_nothing_to_display;
+        protected String getNothingToDisplayString() {
+            return getString(R.string.r_search_nothing_to_display);
         }
     }
 
