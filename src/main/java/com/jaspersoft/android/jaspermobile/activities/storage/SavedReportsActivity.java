@@ -31,6 +31,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.ContextMenu;
@@ -39,7 +40,7 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.*;
 import com.actionbarsherlock.view.Menu;
-import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockListActivity;
+import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockFragmentActivity;
 import com.jaspersoft.android.jaspermobile.JasperMobileApplication;
 import com.jaspersoft.android.jaspermobile.R;
 import com.jaspersoft.android.jaspermobile.activities.HomeActivity;
@@ -47,19 +48,20 @@ import com.jaspersoft.android.jaspermobile.activities.viewer.html.BaseHtmlViewer
 import com.jaspersoft.android.jaspermobile.activities.viewer.html.SavedReportHtmlViewerActivity;
 import com.jaspersoft.android.sdk.ui.adapters.FileArrayAdapter;
 import com.jaspersoft.android.sdk.util.FileUtils;
-import roboguice.inject.InjectView;
 import roboguice.util.Ln;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Comparator;
 
+import static com.jaspersoft.android.jaspermobile.activities.storage.SavedReportsListFragment.OnSavedReportClickListener;
+
 /**
  * @author Ivan Gadzhega
  * @since 1.8
  */
 
-public class SavedReportsActivity extends RoboSherlockListActivity {
+public class SavedReportsActivity extends RoboSherlockFragmentActivity implements OnSavedReportClickListener {
 
     // Context menu IDs
     private static final int ID_CM_OPEN = 10;
@@ -69,32 +71,17 @@ public class SavedReportsActivity extends RoboSherlockListActivity {
     private static final int ID_D_RENAME_REPORT = 20;
     private static final int ID_D_DELETE_REPORT = 21;
 
-    @InjectView(R.id.nothingToDisplayText)
-    private TextView nothingToDisplayText;
-
-    @InjectView(android.R.id.list)
-    private ListView listView;
-
     private File selectedFile;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.repository_layout);
-
-        // set empty view
-        listView.setEmptyView(nothingToDisplayText);
-        // Register a context menu to be shown for the given view
-        registerForContextMenu(listView);
-        //update title
+        setContentView(R.layout.saved_reports_layout);
         getSupportActionBar().setTitle(R.string.sdr_ab_title);
-
         updateReportsListView();
     }
 
-    @Override
-    protected void onListItemClick(ListView listView, View view, int position, long id) {
-        File reportFile = (File) getListView().getItemAtPosition(position);
+    public void onSavedReportClick(File reportFile) {
         openReportFile(reportFile);
     }
 
@@ -191,6 +178,18 @@ public class SavedReportsActivity extends RoboSherlockListActivity {
     //---------------------------------------------------------------------
     // Helper methods
     //---------------------------------------------------------------------
+
+    private ListFragment getListFragment() {
+        return (ListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
+    }
+
+    private ListView getListView() {
+        return getListFragment().getListView();
+    }
+
+    private void setListAdapter(ListAdapter adapter) {
+        getListFragment().setListAdapter(adapter);
+    }
 
     private Dialog createReportRenamingDialog() {
         final View customLayout = getLayoutInflater().inflate(R.layout.rename_report_dialog_layout, null);
@@ -336,7 +335,7 @@ public class SavedReportsActivity extends RoboSherlockListActivity {
             setListAdapter(arrayAdapter);
         } else {
             setListAdapter(null);
-            nothingToDisplayText.setText(R.string.r_browser_nothing_to_display);
+            getListFragment().setEmptyText(getString(R.string.r_browser_nothing_to_display));
         }
     }
 
