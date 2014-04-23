@@ -28,13 +28,12 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.Toast;
 import com.actionbarsherlock.view.Menu;
 import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockFragmentActivity;
@@ -44,6 +43,8 @@ import com.jaspersoft.android.jaspermobile.activities.HomeActivity;
 import com.jaspersoft.android.jaspermobile.activities.SettingsActivity;
 import com.jaspersoft.android.jaspermobile.activities.async.RequestExceptionHandler;
 import com.jaspersoft.android.jaspermobile.activities.report.ReportOptionsActivity;
+import com.jaspersoft.android.jaspermobile.activities.repository.fragment.ResourcesFragment;
+import com.jaspersoft.android.jaspermobile.activities.repository.fragment.ResourcesGridFragment;
 import com.jaspersoft.android.jaspermobile.activities.resource.ResourceInfoActivity;
 import com.jaspersoft.android.jaspermobile.activities.viewer.html.BaseHtmlViewerActivity;
 import com.jaspersoft.android.jaspermobile.activities.viewer.html.DashboardHtmlViewerActivity;
@@ -62,13 +63,11 @@ import com.octo.android.robospice.request.listener.RequestListener;
 
 import java.util.ArrayList;
 
-import static com.jaspersoft.android.jaspermobile.activities.repository.fragment.ResourcesListFragment.OnResourceClickListener;
-
 /**
  * @author Ivan Gadzhega
  * @since 1.0
  */
-public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivity implements OnResourceClickListener {
+public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivity implements ResourcesActivity {
 
     // Extras
     public static final String EXTRA_BC_TITLE_SMALL = "BaseRepositoryActivity.EXTRA_BC_TITLE_SMALL";
@@ -80,6 +79,8 @@ public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivit
     protected static final int ID_CM_VIEW_DETAILS = 12;
     protected static final int ID_CM_ADD_TO_FAVORITES = 13;
 
+    // Fragment tags
+    private static final String TAG_RESOURCES_FRAGMENT = "BaseRepositoryActivity.TAG_RESOURCES_FRAGMENT";
     // Action Bar IDs
     private static final int ID_AB_SETTINGS = 30;
 
@@ -88,6 +89,7 @@ public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivit
     protected DatabaseProvider dbProvider;
     protected SpiceManager serviceManager;
 
+    protected ResourcesFragment resourcesFragment;
     protected ResourceLookup resourceLookup;
 
     private ProgressDialog progressDialog;
@@ -100,6 +102,15 @@ public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivit
         dbProvider = new DatabaseProvider(this);
         // bind to service
         serviceManager = new SpiceManager(JsXmlSpiceService.class);
+
+        if (savedInstanceState != null) {
+            resourcesFragment = (ResourcesFragment) getSupportFragmentManager().findFragmentByTag(TAG_RESOURCES_FRAGMENT);
+        } else {
+            resourcesFragment = new ResourcesGridFragment();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.resources_fragment_container, (Fragment) resourcesFragment, TAG_RESOURCES_FRAGMENT);
+            transaction.commit();
+        }
     }
 
     public void onResourceClick(ResourceLookup resource) {
@@ -181,7 +192,7 @@ public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivit
 
         // Determine on which item in the ListView the user long-clicked and get corresponding resource descriptor
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        ResourceLookup resource = (ResourceLookup) getListView().getItemAtPosition(info.position);
+        ResourceLookup resource = (ResourceLookup) resourcesFragment.getResourcesView().getItemAtPosition(info.position);
 
         // Retrieve the label for that particular item and use as title for the menu
         menu.setHeaderTitle(resource.getLabel());
@@ -204,7 +215,7 @@ public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivit
     public boolean onContextItemSelected(MenuItem item) {
         // Determine on which item in the ListView the user long-clicked and get corresponding resource descriptor
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        resourceLookup = (ResourceLookup) getListView().getItemAtPosition(info.position);
+        resourceLookup = (ResourceLookup) resourcesFragment.getResourcesView().getItemAtPosition(info.position);
 
         // Handle item selection
         switch (item.getItemId()) {
@@ -285,22 +296,6 @@ public abstract class BaseRepositoryActivity extends RoboSherlockFragmentActivit
         htmlViewer.putExtra(BaseHtmlViewerActivity.EXTRA_RESOURCE_URI, dashboardUri);
         htmlViewer.putExtra(BaseHtmlViewerActivity.EXTRA_RESOURCE_LABEL, dashboardLabel);
         startActivity(htmlViewer);
-    }
-
-    protected ListFragment getListFragment() {
-        return (ListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
-    }
-
-    protected ListView getListView() {
-        return getListFragment().getListView();
-    }
-
-    protected ListAdapter getListAdapter() {
-        return getListFragment().getListAdapter();
-    }
-
-    protected void setListAdapter(ListAdapter adapter) {
-        getListFragment().setListAdapter(adapter);
     }
 
     //---------------------------------------------------------------------

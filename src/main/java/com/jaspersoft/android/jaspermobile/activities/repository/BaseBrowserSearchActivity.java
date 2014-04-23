@@ -34,6 +34,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.ArrayAdapter;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.SearchView;
@@ -46,7 +47,6 @@ import com.jaspersoft.android.sdk.client.oxm.ResourcesList;
 import com.jaspersoft.android.sdk.client.oxm.resource.ResourceLookup;
 import com.jaspersoft.android.sdk.client.oxm.resource.ResourceLookupsList;
 import com.jaspersoft.android.sdk.client.oxm.server.ServerInfo;
-import com.jaspersoft.android.sdk.ui.adapters.ResourceLookupArrayAdapter;
 import com.jaspersoft.android.sdk.ui.adapters.ResourceLookupComparator;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
@@ -79,7 +79,21 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         progressView = getLayoutInflater().inflate(R.layout.list_indeterminate_progress, null);
-        handleIntent(getIntent(), false);
+        handleIntent(getIntent());
+    }
+
+    @Override
+    public void loadResources(boolean forceUpdate) {
+        this.forceUpdate = forceUpdate;
+
+//        getListFragment().setListShown(false);
+        resourcesFragment.setResourcesAdapter(null);
+
+        setRefreshActionButtonState(true);
+
+        GetServerInfoRequest request = new GetServerInfoRequest(jsRestClient);
+        long cacheExpiryDuration = SettingsActivity.getRepoCacheExpirationValue(this);
+        serviceManager.execute(request, request.createCacheKey(), cacheExpiryDuration, new GetServerInfoListener());
     }
 
     @Override
@@ -124,7 +138,7 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
         // Handle item selection
         switch (item.getItemId()) {
             case ID_AB_REFRESH:
-                handleIntent(getIntent(), true);
+                loadResources(true);
                 return true;
             case ID_AB_FAVORITES:
                 Intent favoritesIntent = new Intent();
@@ -142,19 +156,6 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
     protected void onStop() {
         searchItem.collapseActionView();
         super.onStop();
-    }
-
-    protected void handleIntent(Intent intent, boolean forceUpdate) {
-        this.forceUpdate = forceUpdate;
-
-        getListFragment().setListShown(false);
-        setListAdapter(null);
-
-        setRefreshActionButtonState(true);
-
-        GetServerInfoRequest request = new GetServerInfoRequest(jsRestClient);
-        long cacheExpiryDuration = SettingsActivity.getRepoCacheExpirationValue(this);
-        serviceManager.execute(request, request.createCacheKey(), cacheExpiryDuration, new GetServerInfoListener());
     }
 
     protected void updateTitles(String title, String subtitle) {
@@ -177,6 +178,8 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
             }
         }
     }
+
+    protected abstract void handleIntent(Intent intent);
 
     protected abstract void getResources(boolean ignoreCache);
 
@@ -215,7 +218,7 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
                 // REST v2
                 offset = 0;
                 getResourceLookups(forceUpdate);
-                getListView().setOnScrollListener(BaseBrowserSearchActivity.this);
+                resourcesFragment.getResourcesView().setOnScrollListener(BaseBrowserSearchActivity.this);
             } else if (currentVersion >= ServerInfo.VERSION_CODES.EMERALD) {
                 // REST v1
                 getResources(forceUpdate);
@@ -275,12 +278,9 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
             }
 
             if (resourceLookups.isEmpty()) {
-                getListFragment().setEmptyText(getNothingToDisplayString());
+                resourcesFragment.setEmptyText(getNothingToDisplayString());
             } else {
-                ResourceLookupArrayAdapter arrayAdapter =
-                        new ResourceLookupArrayAdapter(BaseBrowserSearchActivity.this, resourceLookups);
-                arrayAdapter.sort(new ResourceLookupComparator());
-                setListAdapter(arrayAdapter);
+                resourcesFragment.initResourcesAdapter(resourceLookups, new ResourceLookupComparator());
             }
 
             setRefreshActionButtonState(false);
@@ -309,19 +309,19 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
             List<ResourceLookup> resourceLookups = resourceLookupsList.getResourceLookups();
 
             if (resourceLookups.isEmpty()) {
-                getListFragment().setEmptyText(getNothingToDisplayString());
+                resourcesFragment.setEmptyText(getNothingToDisplayString());
             } else {
-                ResourceLookupArrayAdapter arrayAdapter = (ResourceLookupArrayAdapter) getListAdapter();
-                if (arrayAdapter == null) {
-                    if (getListView().getFooterViewsCount() == 0) {
-                        getListView().addFooterView(progressView);
-                    }
-                    arrayAdapter = new ResourceLookupArrayAdapter(BaseBrowserSearchActivity.this, new ArrayList<ResourceLookup>());
-                    setListAdapter(arrayAdapter);
+                ArrayAdapter<ResourceLookup> resourcesAdapter = resourcesFragment.getResourcesAdapter();
+                if (resourcesAdapter == null) {
+//                    if (getListView().getFooterViewsCount() == 0) {
+//                        getListView().addFooterView(progressView);
+//                    }
+                    resourcesFragment.initResourcesAdapter(new ArrayList<ResourceLookup>());
+                    resourcesAdapter = resourcesFragment.getResourcesAdapter();
                 }
 
                 for (ResourceLookup lookup : resourceLookups) {
-                    arrayAdapter.add(lookup);
+                    resourcesAdapter.add(lookup);
                 }
             }
 
@@ -331,9 +331,9 @@ public abstract class BaseBrowserSearchActivity extends BaseRepositoryActivity i
                 total = resourceLookupsList.getTotalCount();
             }
 
-            if (offset + LIMIT > total) {
-                getListView().removeFooterView(progressView);
-            }
+//            if (offset + LIMIT > total) {
+//                getListView().removeFooterView(progressView);
+//            }
         }
 
         protected String getNothingToDisplayString() {

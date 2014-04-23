@@ -137,7 +137,8 @@ public class SearchActivity extends BaseBrowserSearchActivity {
                         }
 
                         getIntent().putExtra(EXTRA_RESOURCE_TYPES, types);
-                        handleIntent(getIntent(), false);
+                        handleIntent(getIntent());
+                        loadResources(false);
 
                         dialog.dismiss();
                     }
@@ -180,10 +181,12 @@ public class SearchActivity extends BaseBrowserSearchActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
-        handleIntent(intent, false);
+        handleIntent(intent);
+        loadResources(false);
     }
 
-    protected void handleIntent(Intent intent, boolean forceUpdate) {
+    @Override
+    protected void handleIntent(Intent intent) {
         String title = getString(R.string.s_title);
         String subtitle = intent.getStringExtra(EXTRA_BC_TITLE_SMALL);
         updateTitles(title, subtitle);
@@ -191,8 +194,6 @@ public class SearchActivity extends BaseBrowserSearchActivity {
         uri = intent.getStringExtra(EXTRA_RESOURCE_URI);
         query = intent.getStringExtra(SearchManager.QUERY);
         types = intent.getStringArrayListExtra(EXTRA_RESOURCE_TYPES);
-
-        super.handleIntent(intent, forceUpdate);
     }
 
     //---------------------------------------------------------------------

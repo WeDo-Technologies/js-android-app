@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Jaspersoft Corporation. All rights reserved.
+ * Copyright (C) 2012-2014 Jaspersoft Corporation. All rights reserved.
  * http://community.jaspersoft.com/project/jaspermobile-android
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -64,7 +64,8 @@ public class BrowserActivity extends BaseBrowserSearchActivity {
         super.startActivity(intent);
     }
 
-    protected void handleIntent(Intent intent, boolean forceUpdate) {
+    @Override
+    protected void handleIntent(Intent intent) {
         Bundle extras = getIntent().getExtras();
 
         String subtitle = extras.getString(EXTRA_BC_TITLE_SMALL);
@@ -72,8 +73,6 @@ public class BrowserActivity extends BaseBrowserSearchActivity {
         updateTitles(title, subtitle);
 
         this.uri = extras.getString(EXTRA_RESOURCE_URI);
-
-        super.handleIntent(intent, forceUpdate);
     }
 
     protected void getResources(boolean ignoreCache) {

@@ -34,7 +34,6 @@ import android.widget.AdapterView;
 import com.jaspersoft.android.jaspermobile.R;
 import com.jaspersoft.android.jaspermobile.db.tables.Favorites;
 import com.jaspersoft.android.sdk.client.oxm.resource.ResourceLookup;
-import com.jaspersoft.android.sdk.ui.adapters.ResourceLookupArrayAdapter;
 import com.jaspersoft.android.sdk.ui.adapters.ResourceLookupComparator;
 
 import java.util.ArrayList;
@@ -69,7 +68,10 @@ public class FavoritesActivity extends BaseRepositoryActivity{
         Bundle extras = getIntent().getExtras();
         String title = extras.getString(EXTRA_BC_TITLE_LARGE);
         getSupportActionBar().setTitle(title);
+    }
 
+    @Override
+    public void loadResources(boolean forceUpdate) {
         Cursor cursor = dbProvider.fetchFavoriteItemsByParams(serverProfileId, userName, organization);
         startManagingCursor(cursor);
         List<ResourceLookup> resourceLookups = new ArrayList<ResourceLookup>();
@@ -88,11 +90,9 @@ public class FavoritesActivity extends BaseRepositoryActivity{
 
         // show the favorite resources
         if (resourceLookups.isEmpty()) {
-            getListFragment().setEmptyText(getString(R.string.r_browser_nothing_to_display));
+            resourcesFragment.setEmptyText(getString(R.string.r_browser_nothing_to_display));
         } else {
-            ResourceLookupArrayAdapter arrayAdapter = new ResourceLookupArrayAdapter(this, resourceLookups);
-            arrayAdapter.sort(new ResourceLookupComparator()); // sort: non-case-sensitive, folders first
-            setListAdapter(arrayAdapter);
+            resourcesFragment.initResourcesAdapter(resourceLookups, new ResourceLookupComparator());
         }
     }
 
@@ -112,13 +112,13 @@ public class FavoritesActivity extends BaseRepositoryActivity{
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        ResourceLookup resource = (ResourceLookup) getListView().getItemAtPosition(info.position);
+        ResourceLookup resource = (ResourceLookup) resourcesFragment.getResourcesView().getItemAtPosition(info.position);
         switch (item.getItemId()) {
             case ID_CM_REMOVE_FROM_FAVORITES:
                 //Remove favorite item by uri, serverProfileId, username, organization
                 dbProvider.deleteFavoriteItems(resource.getUri(), serverProfileId, userName, organization);
-                ((ResourceLookupArrayAdapter) getListAdapter()).remove(resource);
-                ((ResourceLookupArrayAdapter) getListAdapter()).notifyDataSetChanged();
+                resourcesFragment.getResourcesAdapter().remove(resource);
+                resourcesFragment.getResourcesAdapter().notifyDataSetChanged();
                 return true;
             default:
                 // If you don't handle the menu item, you should pass the menu item to the superclass implementation

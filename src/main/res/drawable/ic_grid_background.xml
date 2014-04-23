@@ -23,14 +23,7 @@
     <http://www.gnu.org/licenses/lgpl>.
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    style="@style/repository.layout" >
-
-    <FrameLayout
-        android:id="@+id/resources_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-    />
-
-</LinearLayout>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+        android:src="@drawable/tmp_grid_bg"
+        android:tileMode="repeat"
+/>
