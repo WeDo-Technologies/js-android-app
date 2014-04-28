@@ -11,7 +11,7 @@ buildscript {
 apply plugin: 'android'
 
 group = 'com.jaspersoft.android'
-version = '1.8.1-SNAPSHOT'
+version = '2.0-SNAPSHOTT'
 description = 'js-android-jaspermobile'
 
 android {
@@ -21,7 +21,7 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 19
-        versionCode 9010801
+        versionCode 9020000
         versionName version
     }
 
@@ -76,8 +76,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.jaspersoft.android.sdk:js-android-sdk-client:1.8.1-SNAPSHOT'
-    compile 'com.jaspersoft.android.sdk:js-android-sdk-ui:1.8.1-SNAPSHOT'
+    compile 'com.jaspersoft.android.sdk:js-android-sdk-client:2.0-SNAPSHOT'
+    compile 'com.jaspersoft.android.sdk:js-android-sdk-ui:2.0-SNAPSHOT'
     compile 'org.roboguice:roboguice:2.0'
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
     compile 'com.github.rtyley:roboguice-sherlock:1.5'
